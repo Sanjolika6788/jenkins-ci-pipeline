@@ -46,10 +46,15 @@ pipeline {
     }
     post {
         always {
-            mail to: 's223580955@deakin.au.edu',
-                 subject: "Build ${currentBuild.fullDisplayName}",
-                 body: "Build finished with status: ${currentBuild.result}",
-                 attachLog: true
+            emailext(
+                to: 's223580955@deakin.au.edu',
+                subject: "Build ${currentBuild.fullDisplayName}",
+                body: """\
+                       Build finished with status: ${currentBuild.result}
+                       Check console output at ${BUILD_URL} to view the results.
+                       """,
+                attachLog: true  // This will include the console log as an attachment
+            )
         }
     }
 }
