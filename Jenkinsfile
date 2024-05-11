@@ -47,7 +47,7 @@ pipeline {
     post {
         always {
             emailext(
-                to: 's223580955@deakin.au.edu',
+                to: 'nonuchaudhary28@gmail.com',
                 subject: "Build ${currentBuild.fullDisplayName}",
                 body: """\
                        Build finished with status: ${currentBuild.result}
