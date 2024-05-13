@@ -7,12 +7,22 @@ pipeline {
                 echo 'Building the application using Maven...'
                 powershell 'mvn clean install'
             }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                }
+            }
         }
         
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running Unit and Integration Tests...'
                 powershell 'mvn test'
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/surefire-reports/*.xml', fingerprint: true
+                }
             }
         }
         
@@ -54,10 +64,14 @@ pipeline {
     
     post {
         always {
-            mail to: 'princerani27@gmail.com',
-                 subject: "Pipeline ${currentBuild.fullDisplayName} ${currentBuild.result}",
-                 body: "See attachments for logs and results.",
-                 attachmentsPattern: "**/*.log"
+            emailext (
+                to: 'email@example.com',
+                subject: "Pipeline ${currentBuild.fullDisplayName} - ${currentBuild.result}",
+                body: """<p>See attached logs and results for details.</p>
+                         <p>Build: ${env.BUILD_URL}</p>""",
+                attachmentsPattern: '**/*.log',
+                mimeType: 'text/html'
+            )
         }
     }
 }
