@@ -1,15 +1,21 @@
 pipeline {
     agent any
 
+    tools {
+        // Define Maven tool configured in Jenkins
+        maven 'Maven_3.8.1' // Ensure to replace 'Maven_3.8.1' with the actual name of your configured Maven in Jenkins
+    }
+
     stages {
         stage('Build') {
             steps {
                 echo 'Building the application using Maven...'
-                powershell 'mvn clean install'
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                script {
+                    try {
+                        sh 'mvn clean install'
+                    } catch (Exception e) {
+                        error "Build failed. ${e.getMessage()}"
+                    }
                 }
             }
         }
@@ -17,11 +23,12 @@ pipeline {
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running Unit and Integration Tests...'
-                powershell 'mvn test'
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/target/surefire-reports/*.xml', fingerprint: true
+                script {
+                    try {
+                        sh 'mvn test'
+                    } catch (Exception e) {
+                        error "Tests failed. ${e.getMessage()}"
+                    }
                 }
             }
         }
@@ -29,35 +36,65 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Analyzing code with SonarQube...'
-                powershell 'mvn sonar:sonar'
+                script {
+                    try {
+                        sh 'mvn sonar:sonar'
+                    } catch (Exception e) {
+                        error "Code analysis failed. ${e.getMessage()}"
+                    }
+                }
             }
         }
         
         stage('Security Scan') {
             steps {
                 echo 'Performing Security Scan...'
-                powershell './runSecurityScan.ps1' // Assumes a PowerShell script for security scanning
+                script {
+                    try {
+                        powershell './runSecurityScan.ps1'
+                    } catch (Exception e) {
+                        error "Security scan failed. ${e.getMessage()}"
+                    }
+                }
             }
         }
         
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to AWS EC2 Staging...'
-                powershell './deployStaging.ps1' // Assumes a PowerShell deployment script
+                script {
+                    try {
+                        powershell './deployStaging.ps1'
+                    } catch (Exception e) {
+                        error "Staging deployment failed. ${e.getMessage()}"
+                    }
+                }
             }
         }
         
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running Integration Tests on Staging...'
-                powershell 'Invoke-WebRequest -Uri http://staging-server/test-suite' // Example command
+                script {
+                    try {
+                        powershell 'Invoke-WebRequest -Uri http://staging-server/test-suite'
+                    } catch (Exception e) {
+                        error "Integration tests on staging failed. ${e.getMessage()}"
+                    }
+                }
             }
         }
         
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to AWS EC2 Production...'
-                powershell './deployProduction.ps1' // Assumes a PowerShell deployment script
+                script {
+                    try {
+                        powershell './deployProduction.ps1'
+                    } catch (Exception e) {
+                        error "Production deployment failed. ${e.getMessage()}"
+                    }
+                }
             }
         }
     }
@@ -65,11 +102,21 @@ pipeline {
     post {
         always {
             emailext (
-                to: 'email@example.com',
+                to: 'ramukeka01@gmail.com',
                 subject: "Pipeline ${currentBuild.fullDisplayName} - ${currentBuild.result}",
                 body: """<p>See attached logs and results for details.</p>
                          <p>Build: ${env.BUILD_URL}</p>""",
                 attachmentsPattern: '**/*.log',
+                mimeType: 'text/html'
+            )
+        }
+        failure {
+            echo 'Notifying failure...'
+            emailext (
+                to: 'ramukeka01@gmail.com',
+                subject: "Failed: Pipeline ${currentBuild.fullDisplayName} - ${currentBuild.result}",
+                body: """<p>Failure occurred. Please check the Jenkins console for more details.</p>
+                         <p>Build: ${env.BUILD_URL}</p>""",
                 mimeType: 'text/html'
             )
         }
