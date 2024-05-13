@@ -1,52 +1,80 @@
 pipeline {
     agent any
+    environment {
+        MAVEN_HOME = '/path/to/maven'
+    }
     stages {
         stage('Build') {
             steps {
-                echo 'Building with Maven'
+                script {
+                    // Use Maven to compile and package the application
+                    sh "${MAVEN_HOME}/bin/mvn clean package"
+                }
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running tests'
+                script {
+                    // Run unit tests and integration tests using Maven
+                    sh "${MAVEN_HOME}/bin/mvn test"
+                }
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml' // Collect JUnit test reports
+                }
             }
         }
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code'
+                script {
+                    // Analyze code using SonarQube
+                    sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
+                }
             }
         }
         stage('Security Scan') {
             steps {
-                echo 'Performing security scan'
+                script {
+                    // Example: Using OWASP Dependency Check
+                    sh "${MAVEN_HOME}/bin/mvn org.owasp:dependency-check-maven:check"
+                }
             }
         }
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to AWS EC2 staging'
+                script {
+                    // Example deployment script to AWS EC2
+                    sh 'deploy-to-staging.sh'
+                }
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Testing in staging'
+                script {
+                    // Run integration tests in staging environment
+                    sh 'run-staging-tests.sh'
+                }
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production server'
+                script {
+                    // Deploy to production
+                    sh 'deploy-to-production.sh'
+                }
             }
         }
     }
     post {
         always {
-            emailext (
-                to: 'ramukeka01@gmail.com',
-                subject: "Build ${currentBuild.fullDisplayName}",
-                body: """\
-                    Build finished with status: ${currentBuild.result}
-                    Check console output at ${BUILD_URL} to view the results.
-                    """,
-                attachLog: true  // Ensures the console log is attached
+            // Send email notifications
+            emailext(
+              subject: "Jenkins Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+              body: """<p>Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                       <p>Status: ${currentBuild.currentResult}</p>
+                       <p>Check console output at <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>""",
+              to: 'ramukeka01@gmail.com'
             )
         }
     }
