@@ -48,7 +48,7 @@ pipeline {
     post {
         failure {
             emailext(
-                to: 'ramukeka01@gmail.com',
+                to: 'ramukeka01',
                 subject: "Build ${currentBuild.fullDisplayName} Failed",
                 body: """\
                        Build failed with status: ${currentBuild.result}
@@ -59,7 +59,7 @@ pipeline {
         }
         success {
             emailext(
-                to: 'ramukeka01@gmail.com',
+                to: 'ramukeka01',
                 subject: "Build ${currentBuild.fullDisplayName} Succeeded",
                 body: """\
                        Build succeeded with status: ${currentBuild.result}
@@ -74,7 +74,7 @@ pipeline {
                 body: """<p>Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                        <p>Status: ${currentBuild.currentResult}</p>
                        <p>Check console output at <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>""",
-                to: 'ramukeka01@gmail.com'
+                to: 'ramukeka01'
             )
         }
     }
