@@ -67,16 +67,19 @@ pipeline {
                 attachLog: true
             )
         }
+        post {
         always {
+            // Send email notifications
             emailext(
-                to: 'ramukeka01@gmail.com',
-                subject: "Build ${currentBuild.fullDisplayName} Status: ${currentBuild.currentResult}",
-                body: """\
-                       Build finished with status: ${currentBuild.currentResult}
-                       Check console output at ${env.BUILD_URL} to view the results.
-                       """,
-                attachLog: true
+              subject: "Jenkins Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+              body: """<p>Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                       <p>Status: ${currentBuild.currentResult}</p>
+                       <p>Check console output at <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>""",
+              to: 'ramukeka01@gmail.com'
             )
+        }
+        }
+    
         }
     }
 }
