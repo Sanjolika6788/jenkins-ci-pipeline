@@ -48,33 +48,36 @@ pipeline {
     post {
         failure {
             emailext(
-                to: 'nonuchaudhary28@gmail.com',
+                to: 'ramukeka01@gmail.com',
                 subject: "Build ${currentBuild.fullDisplayName} Failed",
                 body: """\
-                       Build failed with status: ${currentBuild.result}
-                       Check console output at ${BUILD_URL} to view the results.
+                       <p>Build failed with status: ${currentBuild.result}</p>
+                       <p>Check console output at <a href="${env.BUILD_URL}">${env.BUILD_URL}</a> to view the results.</p>
                        """,
                 attachLog: true
             )
         }
         success {
             emailext(
-                to: 'nonuchaudhary28@gmail.com',
+                to: 'ramukeka01@gmail.com',
                 subject: "Build ${currentBuild.fullDisplayName} Succeeded",
                 body: """\
-                       Build succeeded with status: ${currentBuild.result}
-                       Check console output at ${BUILD_URL} to view the results.
+                       <p>Build succeeded with status: ${currentBuild.result}</p>
+                       <p>Check console output at <a href="${env.BUILD_URL}">${env.BUILD_URL}</a> to view the results.</p>
                        """,
                 attachLog: true
             )
         }
         always {
             emailext(
+                to: 'ramukeka01@gmail.com',
                 subject: "Jenkins Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                body: """\
+                       <p>Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                        <p>Status: ${currentBuild.currentResult}</p>
-                       <p>Check console output at <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></p>""",
-                to: 'nonuchaudhary28@gmail.com'
+                       <p>Check console output at <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                       """,
+                attachLog: true
             )
         }
     }
